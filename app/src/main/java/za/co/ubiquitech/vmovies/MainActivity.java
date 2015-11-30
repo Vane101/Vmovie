@@ -2,19 +2,35 @@ package za.co.ubiquitech.vmovies;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import za.co.ubiquitech.vmovies.util.MoviePreferenceActivity;
+import com.facebook.stetho.Stetho;
 
-public class MainActivity extends AppCompatActivity {
+import za.co.ubiquitech.vmovies.formObjects.MovieDetailsForm;
+
+public class MainActivity extends AppCompatActivity implements MovieFragment.Callback {
     public static final String MOVIE_API_KEY = "b3d57ac00feabdc38238f51d1255f024";
+    private boolean mTwoPane = false;
+    private static final String DETAILFRAGMENT_TAG = "DFTAG";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //http://facebook.github.io/stetho/
+        Stetho.initializeWithDefaults(this);
         setContentView(R.layout.activity_main);
+        if (findViewById(R.id.movie_detail_container) != null) {
+            mTwoPane = true;
+            DetailFragment detailFragment = new DetailFragment();
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.movie_detail_container, detailFragment, DETAILFRAGMENT_TAG).commit();
+        } else {
+            mTwoPane = false;
+            getSupportActionBar().setElevation(0f);
+        }
     }
 
     @Override
@@ -24,8 +40,6 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-
-///testing
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -33,13 +47,29 @@ public class MainActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            Intent settingIntent = new Intent(this, MoviePreferenceActivity.class);
-            startActivity(settingIntent);
-            return true;
-        }
-
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    public void onItemSelected(MovieDetailsForm selectedMovie) {
+        if (mTwoPane) {
+            // In two-pane mode, show the detail view in this activity by
+            // adding or replacing the detail fragment using a
+            // fragment transaction.
+            Bundle args = new Bundle();
+            args.putParcelable(DetailFragment.DETAIL_MOVIE, selectedMovie);
+
+            DetailFragment fragment = new DetailFragment();
+            fragment.setArguments(args);
+
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.movie_detail_container, fragment, DETAILFRAGMENT_TAG)
+                    .commit();
+        } else {
+            Intent intent = new Intent(this, DetailActivity.class);
+            intent.putExtra(DetailFragment.DETAIL_MOVIE, selectedMovie);
+            startActivity(intent);
+        }
+    }
+
 }

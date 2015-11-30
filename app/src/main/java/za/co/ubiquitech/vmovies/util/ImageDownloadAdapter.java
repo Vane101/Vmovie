@@ -35,7 +35,7 @@ public class ImageDownloadAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        return movies.size() - 1;
+        return movies.size();
     }
 
     @Override

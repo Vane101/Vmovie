@@ -1,0 +1,22 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="15dp"
+    android:stretchColumns="1">
+
+    <TextView
+        android:id="@+id/list_item_reviews_author_textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#212121"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/list_item_reviews_content_textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/list_item_reviews_author_textview"
+        android:textColor="#727272"
+        android:paddingBottom="3dp" />
+</RelativeLayout>

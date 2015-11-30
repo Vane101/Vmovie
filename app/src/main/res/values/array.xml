@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="pref_sort_values">
-        <item>sort_by=popularity.desc</item>
-        <item>sort_by=vote_average.desc</item>
+        <item>popular</item>
+        <item>top_rated</item>
+        <item>favourite</item>
     </string-array>
 
     <string-array name="pref_sort_options">
         <item>Most Popular</item>
-        <item>Highest Rating</item>
+        <item>Top Rating</item>
+        <item>Favourite</item>
     </string-array>
 
 </resources>

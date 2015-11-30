@@ -7,8 +7,9 @@
     <ListPreference
         android:key="@string/pref_sort_key"
         android:title="@string/sort_title"
-        android:defaultValue="@string/sort_popularity"
+        android:defaultValue="@string/sort_default"
         android:entryValues="@array/pref_sort_values"
-        android:entries="@array/pref_sort_options"/>
+        android:entries="@array/pref_sort_options"
+        android:summary="%s"/>
 
 </PreferenceScreen>
