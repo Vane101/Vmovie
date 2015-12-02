@@ -15,6 +15,7 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.Cal
     public static final String MOVIE_API_KEY = "b3d57ac00feabdc38238f51d1255f024";
     private boolean mTwoPane = false;
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
+    private Bundle arguments;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +28,16 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.Cal
             DetailFragment detailFragment = new DetailFragment();
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             transaction.replace(R.id.movie_detail_container, detailFragment, DETAILFRAGMENT_TAG).commit();
+
+            if (savedInstanceState != null) {
+                arguments=savedInstanceState.getBundle(DetailFragment.DETAIL_MOVIE);
+
+                DetailFragment fragment = new DetailFragment();
+                fragment.setArguments(arguments);
+
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.movie_detail_container, fragment, DETAILFRAGMENT_TAG)
+                        .commit();            }
         } else {
             mTwoPane = false;
             getSupportActionBar().setElevation(0f);
@@ -38,6 +49,12 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.Cal
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBundle(DetailFragment.DETAIL_MOVIE, arguments);
     }
 
     @Override
@@ -56,11 +73,11 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.Cal
             // In two-pane mode, show the detail view in this activity by
             // adding or replacing the detail fragment using a
             // fragment transaction.
-            Bundle args = new Bundle();
-            args.putParcelable(DetailFragment.DETAIL_MOVIE, selectedMovie);
+            arguments = new Bundle();
+            arguments.putParcelable(DetailFragment.DETAIL_MOVIE, selectedMovie);
 
             DetailFragment fragment = new DetailFragment();
-            fragment.setArguments(args);
+            fragment.setArguments(arguments);
 
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.movie_detail_container, fragment, DETAILFRAGMENT_TAG)

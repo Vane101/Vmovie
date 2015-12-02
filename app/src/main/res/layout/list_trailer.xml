@@ -1,30 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="5dp">
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/textview_trailer"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:padding="0dp"
+        android:gravity="center" />
 
-        <ImageView
-            android:id="@+id/btn_trailer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@android:drawable/ic_media_play" />
-    </LinearLayout>
-
-    <LinearLayout
+    <ImageView
+        android:layout_below="@id/textview_trailer"
+        android:id="@+id/trailer_thumbnail"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:padding="0dp"
+        android:contentDescription="Trailer Thumbnail"/>
 
-        <TextView
-            android:id="@+id/textview_trailer"
-            android:layout_width="wrap_content"
-            android:layout_height="30dp"
-            android:layout_marginStart="38dp"
-            android:gravity="center" />
-    </LinearLayout>
 </RelativeLayout>

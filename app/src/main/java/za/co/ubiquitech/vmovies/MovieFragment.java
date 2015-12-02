@@ -53,10 +53,11 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
     private final String LOG_TAG = MovieFragment.class.getSimpleName();
     JSONArray movieResults = null;
     private ImageDownloadAdapter mMovieAdapter;
+    MovieDetailsForm[] mMovieList;
     private GridView gridView;
 
     private static final int CURSOR_LOADER = 0;
-
+    private static final String MOVIE_KEY = "MOVIE_KEY";
 
     /**
      * A callback interface that all activities containing this fragment must
@@ -109,7 +110,6 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main_activity_movies_view, container, false);
         gridView = (GridView) rootView.findViewById(R.id.gridview_movies);
-        getActivity().setTitle("Favourite");
 
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -162,6 +162,12 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
         return rootView;
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelableArray(MOVIE_KEY, mMovieList);
+    }
+
     private String getRealPathFromURI(String contentURI) {
         Uri contentUri = Uri.parse(contentURI);
         Cursor cursor = getActivity().getContentResolver().query(contentUri, null, null, null, null);
@@ -200,8 +206,14 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        getLoaderManager().initLoader(CURSOR_LOADER, null, MovieFragment.this);
         super.onActivityCreated(savedInstanceState);
+        if (savedInstanceState != null) {
+            mMovieList=(MovieDetailsForm[]) savedInstanceState.get(MOVIE_KEY);
+            mMovieAdapter = new ImageDownloadAdapter(getActivity(), mMovieList);
+            gridView.setAdapter(mMovieAdapter);
+        } else {
+            getLoaderManager().initLoader(CURSOR_LOADER, null, MovieFragment.this);
+        }
     }
 
     @Override
@@ -216,7 +228,6 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-
         int count = 0;
         MovieDetailsForm[] movies = new MovieDetailsForm[data.getCount()];
         if (data.getCount() > 0) {//check if cursor not empty
@@ -234,6 +245,8 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
                 data.moveToNext();
             } while (!data.isAfterLast());
         }
+        getActivity().setTitle("Favourite");
+        mMovieList = movies;
         mMovieAdapter = new ImageDownloadAdapter(getActivity(), movies);
         gridView.setAdapter(mMovieAdapter);
     }
@@ -340,6 +353,7 @@ public class MovieFragment extends Fragment implements LoaderManager.LoaderCallb
         protected void onPostExecute(MovieDetailsForm[] result) {
             progressDialog.dismiss();
             if (result != null) {
+                mMovieList = result;
                 getActivity().setTitle(title);
                 mMovieAdapter = new ImageDownloadAdapter(getActivity(), result);
                 gridView.setAdapter(mMovieAdapter);

@@ -65,6 +65,8 @@ public class ImageDownloadAdapter extends BaseAdapter {
             String url = getItem(position).getMoviePoster();
             Picasso.with(context)
                     .load(url)
+                    .placeholder(R.mipmap.placeholder_film)
+                    .error(R.mipmap.placeholder_error)
                     .into(holder.movieImageView);
         }
         return convertView;

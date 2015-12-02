@@ -25,7 +25,7 @@ public class ReviewFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_movie_review, container, false);
         ListView customReviewsListView = (ListView) rootView.findViewById(R.id.reviews_list_view);
         Bundle args = getArguments();
-        MovieReviews currentMovieReview = args.getParcelable("review");
+        MovieReviews currentMovieReview = args.getParcelable(DetailFragment.REVIEW_KEY);
         CustomReviewsViewAdapter mReviewsAdapter = new CustomReviewsViewAdapter(getActivity(), currentMovieReview.getReviews());
         customReviewsListView.setAdapter(mReviewsAdapter);
         return rootView;

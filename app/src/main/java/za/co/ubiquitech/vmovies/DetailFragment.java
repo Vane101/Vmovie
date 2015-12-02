@@ -38,6 +38,7 @@ import com.squareup.picasso.Target;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.lucasr.twowayview.TwoWayView;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -56,7 +57,6 @@ import za.co.ubiquitech.vmovies.database.MoviesContract;
 import za.co.ubiquitech.vmovies.formObjects.MovieDetailsForm;
 import za.co.ubiquitech.vmovies.formObjects.MovieReviews;
 import za.co.ubiquitech.vmovies.formObjects.Review;
-import za.co.ubiquitech.vmovies.util.CustomListView;
 import za.co.ubiquitech.vmovies.util.CustomTrailerViewAdapter;
 import za.co.ubiquitech.vmovies.util.JsonRequests;
 
@@ -68,11 +68,12 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     private CustomTrailerViewAdapter mTrailerAdapter;
     private MovieDetailsForm selectedMovie;
     private MovieReviews currentMovieReview;
-    private CustomListView customTrailerListView;
+    private TwoWayView customTrailerListView;
     private int mPosition;
     private Uri mUri;
     private static final int CURSOR_LOADER = 1;
     static final String DETAIL_MOVIE = "SELECTED_MOVIE";
+    static final String REVIEW_KEY = "REVIEW_KEY";
 
     private ShareActionProvider mShareActionProvider;
 
@@ -80,6 +81,10 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        if (savedInstanceState != null) {
+            currentMovieReview = savedInstanceState.getParcelable(REVIEW_KEY);
+            selectedMovie = savedInstanceState.getParcelable(DETAIL_MOVIE);
+        }
     }
 
     @Override
@@ -110,7 +115,6 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        //getLoaderManager().initLoader(CURSOR_LOADER, null, DetailFragment.this);
         super.onActivityCreated(savedInstanceState);
     }
 
@@ -124,7 +128,11 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         Bundle arguments = getArguments();
         if (arguments != null) {
             selectedMovie = arguments.getParcelable(DetailFragment.DETAIL_MOVIE);
-            customTrailerListView = (CustomListView) rootView.findViewById(R.id.trailer_list_view);
+        }
+
+        if (selectedMovie != null) {
+            detailLayout.setVisibility(View.VISIBLE);
+            customTrailerListView = (TwoWayView) rootView.findViewById(R.id.trailer_list_view);
             ((TextView) rootView.findViewById(R.id.detail_movie_name)).setText(selectedMovie.getMovieName());
             ((TextView) rootView.findViewById(R.id.detail_movie_plot)).setText(selectedMovie.getMoviePlot());
             ((TextView) rootView.findViewById(R.id.release_date_view)).setText(selectedMovie.getMovieReleaseDate());
@@ -133,17 +141,17 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             ImageView moviePoster = (ImageView) rootView.findViewById(R.id.detail_poster_image);
             Picasso.with(getActivity())
                     .load(selectedMovie.getMovieBackdrop())
+                    .placeholder(R.mipmap.placeholder_film)
+                    .error(R.mipmap.placeholder_error)
                     .into(moviePoster);
 
             this.mPosition = Integer.parseInt(selectedMovie.getMovieId());
             this.mUri = ContentUris.withAppendedId(MoviesContract.ReviewEntry.CONTENT_URI,
                     mPosition);
 
-            if (savedInstanceState != null) {
-                currentMovieReview = savedInstanceState.getParcelable("reviews");
+            if (currentMovieReview != null) {
                 mTrailerAdapter = new CustomTrailerViewAdapter(getActivity(), currentMovieReview.getMovieYouTubeURL());
                 customTrailerListView.setAdapter(mTrailerAdapter);
-                customTrailerListView.setExpanded(true);
             } else {
                 getLoaderManager().restartLoader(CURSOR_LOADER, null, DetailFragment.this);
             }
@@ -152,10 +160,9 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             btn_review.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-
                     if (currentMovieReview.getReviews() != null && currentMovieReview.getReviews().size() > 0) {
                         Bundle args = new Bundle();
-                        args.putParcelable("review", currentMovieReview);
+                        args.putParcelable(REVIEW_KEY, currentMovieReview);
                         ReviewFragment movieReviewsFragment = new ReviewFragment();
                         movieReviewsFragment.setArguments(args);
                         android.support.v4.app.FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
@@ -178,21 +185,19 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
                     startActivity(youTubeIntent);
                 }
             });
-        }
 
-        if (selectedMovie == null) {
-            detailLayout.setVisibility(View.GONE);
+            FloatingActionButton favButton = (FloatingActionButton) rootView.findViewById(R.id.btn_fav_submit);
+            favButton.setOnClickListener(new View.OnClickListener() {
+                                             @Override
+                                             public void onClick(View view) {
+                                                 safeImages();
+                                             }
+                                         }
+            );
+
         } else {
-            detailLayout.setVisibility(View.VISIBLE);
+            detailLayout.setVisibility(View.GONE);
         }
-
-        FloatingActionButton favButton = (FloatingActionButton) rootView.findViewById(R.id.btn_fav_submit);
-        favButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                safeImages();
-            }
-        });
 
         return rootView;
     }
@@ -425,7 +430,8 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putParcelable("reviews", currentMovieReview);
+        outState.putParcelable(REVIEW_KEY, currentMovieReview);
+        outState.putParcelable(DETAIL_MOVIE, selectedMovie);
     }
 
     private void updateReviews() {
@@ -543,7 +549,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
                 sendIntent.setAction(Intent.ACTION_SEND);
                 sendIntent.setType("text/plain");
                 if (!currentMovieReview.getMovieYouTubeURL().isEmpty()) {
-                    trailerMessage = "Vmovies: " + selectedMovie.getMovieName() + " " + currentMovieReview.getMovieYouTubeURL().get(0);
+                    trailerMessage = "Vmovies: " + selectedMovie.getMovieName() + ", Watch Trailer: " + currentMovieReview.getMovieYouTubeURL().get(0);
 
                 } else {
                     trailerMessage = "Vmovies: " + selectedMovie.getMovieName() + " NO youTube trailer available";
@@ -553,7 +559,6 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
                 mTrailerAdapter = new CustomTrailerViewAdapter(getActivity(), result.getMovieYouTubeURL());
                 customTrailerListView.setAdapter(mTrailerAdapter);
-                customTrailerListView.setExpanded(true);
             }
         }
 
