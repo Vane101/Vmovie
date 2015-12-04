@@ -1,5 +1,6 @@
 package za.co.ubiquitech.vmovies;
 
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -29,7 +30,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.DialerFilter;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -57,6 +60,7 @@ import za.co.ubiquitech.vmovies.database.MoviesContract;
 import za.co.ubiquitech.vmovies.formObjects.MovieDetailsForm;
 import za.co.ubiquitech.vmovies.formObjects.MovieReviews;
 import za.co.ubiquitech.vmovies.formObjects.Review;
+import za.co.ubiquitech.vmovies.util.CustomReviewsViewAdapter;
 import za.co.ubiquitech.vmovies.util.CustomTrailerViewAdapter;
 import za.co.ubiquitech.vmovies.util.JsonRequests;
 
@@ -119,7 +123,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
 
         View rootView = inflater.inflate(R.layout.fragment_movie_detail, container, false);
@@ -161,14 +165,16 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
                 @Override
                 public void onClick(View view) {
                     if (currentMovieReview.getReviews() != null && currentMovieReview.getReviews().size() > 0) {
-                        Bundle args = new Bundle();
-                        args.putParcelable(REVIEW_KEY, currentMovieReview);
-                        ReviewFragment movieReviewsFragment = new ReviewFragment();
-                        movieReviewsFragment.setArguments(args);
-                        android.support.v4.app.FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-                        transaction.replace(R.id.movie_detail_container, movieReviewsFragment);
-                        transaction.addToBackStack(null);
-                        transaction.commit();
+                        //Custom Dialog
+                        final Dialog dialog = new Dialog(getContext(), R.style.AlertDialogStyle);
+                        dialog.setContentView(R.layout.custom_dialog_review);
+                        dialog.setTitle("Movie Reviews");
+                        //Place data in dialog box
+                        ListView customReviewsListView = (ListView) dialog.findViewById(R.id.reviews_list_view);
+                        CustomReviewsViewAdapter mReviewsAdapter = new CustomReviewsViewAdapter(getActivity(), currentMovieReview.getReviews());
+                        customReviewsListView.setAdapter(mReviewsAdapter);
+                        dialog.show();
+
                     } else {
                         showError("No reviews found for this movie");
                     }
