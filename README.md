@@ -1,5 +1,5 @@
 # Vmovie
-Android Movie App
+**Android Movie App**.
 This app was done as part of the Udacity Android Nanodegree program. It is a simple movie application where one can:
 * Discover the latest movies 
 *	View movie posters
